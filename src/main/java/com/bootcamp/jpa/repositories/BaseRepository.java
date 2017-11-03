@@ -81,7 +81,7 @@ public class BaseRepository<T>{
          List<T> result = null;
          
         if( (attr != null && sens != null) && ( offset == 0 && limit == 0) ){
-        str = "select obj FROM "+className+" obj OrderBy "+attr+" "+sens.toUpperCase();
+        str = "select obj FROM "+className+" obj ORDER BY obj."+attr+" "+sens.toUpperCase();
         Query query = getEntityManager().createQuery(str);
         result = query.getResultList();
          }
@@ -94,7 +94,7 @@ public class BaseRepository<T>{
          }
          
         if( (attr != null && sens != null) && ( offset != 0 && limit != 0) ){
-        str = "select obj FROM "+className+" obj OrderBy "+attr+" "+sens.toUpperCase();
+        str = "select obj FROM "+className+" obj ORDER BY obj."+attr+" "+sens.toUpperCase();
         Query query = getEntityManager().createQuery(str);
         query.setFirstResult(offset).setMaxResults(limit);
         result = query.getResultList();

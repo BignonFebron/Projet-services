@@ -7,10 +7,10 @@ package com.bootcamp.Designs;
 import java.util.List;
 
 public class Critere {
-    private String[] filtre;
+    //private String[] filtre;
     private Pagination pagination;
     private Sort sort;
-
+/*
     public String[] getFiltre() {
         return filtre;
     }
@@ -18,7 +18,7 @@ public class Critere {
     public void setFiltre(String[] filtre) {
         this.filtre = filtre;
     }
-
+*/
     public Pagination getPagination() {
         return pagination;
     }
