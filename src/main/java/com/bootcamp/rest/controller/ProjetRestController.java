@@ -3,6 +3,7 @@ package com.bootcamp.rest.controller;
 
 import static aQute.lib.osgi.Processor.split;
 import com.bootcamp.Designs.Critere;
+import com.bootcamp.jpa.entities.Impact;
 import com.bootcamp.jpa.entities.Projet;
 import com.bootcamp.jpa.repositories.ProjetRepository;
 import com.bootcamp.rest.exception.NotCreateException;
@@ -92,20 +93,38 @@ public class ProjetRestController {
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Projet projet) throws SQLException {      
-                //verifie si l'objet existe avant d'enregistrer
-            if(projet.isExiste()){
-            resp=ReturnMsgResponse.message("l'obet que vous tentez de creer existe deja");
+    //verifie si l'objet projet existe avant d'enregistrer
+    if(projet.isExiste()){
+        resp=ReturnMsgResponse.message("l'obet que vous tentez de creer existe deja");
+    }else{
+        List<Impact> iliste = projet.getImpacts();
+        // verifie si la liste est vide ( si impact a ete renseigne lors de l'insertion des valeurs)
+        if(iliste.isEmpty()){
+         try {                                
+                    pr.create(projet);
+                    resp=SuccessMessage.message("Bien cree");
+                } catch (Exception e) {
+                    resp=NotCreateException.notCreateException("Erreur lors de la creation", e);
+                }
+        }else{
+            for (Impact impact : iliste) {
+            //verifie si l'objet projet existe avant d'enregistrer
+            if(impact.isExiste()){
+            resp = ReturnMsgResponse.message("\n L'impact Nom: "+impact.getNom()+" type: "+impact.getType()+" n'esiste pas");
             }else{
-                try {
-                
-                pr.create(projet);
-                resp=SuccessMessage.message("Bien cree");
-            } catch (Exception e) {
-                resp=NotCreateException.notCreateException("Erreur lors de la creation", e);
+            impact.setProjet(projet);
+             try {                                
+                    pr.create(projet);
+                    resp=SuccessMessage.message("Bien cree");
+                } catch (Exception e) {
+                    resp=NotCreateException.notCreateException("Erreur lors de la creation", e);
+                }
             }
         }
-                 
-            
+        }
+        
+    }
+                
         return resp;
     }
 
