@@ -6,6 +6,7 @@ import com.bootcamp.Designs.Critere;
 import com.bootcamp.jpa.entities.Projet;
 import com.bootcamp.jpa.repositories.ProjetRepository;
 import com.bootcamp.rest.exception.NotCreateException;
+import com.bootcamp.rest.exception.ReturnMsgResponse;
 import com.bootcamp.rest.exception.SuccessMessage;
 import com.bootcamp.rest.exception.ReturnResponse;
 import com.bootcamp.rest.exception.UnknownException;
@@ -57,44 +58,29 @@ public class ProjetRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/all")
     public Response getAllProjets(Critere c) { 
-       // recuperation des elemnts de l'objet
-       String[] filtreElts = c.getFiltre();
        
-       String attr = c.getSort().getAttribut();
-       String ordre = c.getSort().getOrdre();
-       
-       int offset = c.getPagination().getOffset();
-       int limit = c.getPagination().getLimit();
-       
-        if(c == null) {
-            try {
+        if(!c.isDefine()) {  // on verifie si les elements de criteres ont etes rensignes
+            try { // si non, on envoie la liste sans trie, ni ordre, ni limite
                 liste = pr.findAll();  
                 return Response.status(200).entity(liste).build();
             } catch (Exception e) {
                 resp=UnknownException.unknownException(e);
             }  
-        }else {
-               
-            if(filtreElts != null)       
-            {
-                try {
-                liste = pr.findByCriterias(attr, ordre, offset, limit);
-                Map<String, Object> responseMaps = filtre(filtreElts, liste.get(0));
-                    for (int i = 0; i < liste.size(); i++) {
-                    responseMaps.putAll(filtre(filtreElts, liste.get(i))) ;
-                    }
-                return Response.status(200).entity(responseMaps).build();
-            } catch (Exception e) {
-                resp=UnknownException.unknownException(e);
-            } 
-            }else{
+        }else { //si oui, on renvoi la liste suivant les criteres
+            
+            // recuperation des elts
+            String attr = c.getSort().getAttribut();
+            String ordre = c.getSort().getOrdre();
+       
+            int offset = c.getPagination().getOffset();
+            int limit = c.getPagination().getLimit();
+            
                 try {
                 liste = pr.findByCriterias(attr, ordre, offset, limit);
                 return Response.status(200).entity(liste).build();
             } catch (Exception e) {
                 resp=UnknownException.unknownException(e);
             } 
-            }
              
         }
               
@@ -106,14 +92,19 @@ public class ProjetRestController {
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Projet projet) throws SQLException {      
-                //
-                 try {
+                //verifie si l'objet existe avant d'enregistrer
+            if(projet.isExiste()){
+            resp=ReturnMsgResponse.message("l'obet que vous tentez de creer existe deja");
+            }else{
+                try {
                 
                 pr.create(projet);
                 resp=SuccessMessage.message("Bien cree");
             } catch (Exception e) {
                 resp=NotCreateException.notCreateException("Erreur lors de la creation", e);
             }
+        }
+                 
             
         return resp;
     }

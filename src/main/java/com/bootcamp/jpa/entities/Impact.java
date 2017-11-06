@@ -5,6 +5,8 @@
 package com.bootcamp.jpa.entities;
 
 import com.bootcamp.jpa.enums.TypesImpact;
+import com.bootcamp.jpa.repositories.ImpactRepository;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -70,5 +72,17 @@ public class Impact {
         this.projet = projet;
     }
     
+    // methode qui verifie si l'instance actuelle existe deja dans la base de donnee 
+    ImpactRepository ir = new ImpactRepository("tpRest-mysql");
     
+    public boolean isExiste(){
+        List<Impact> il = ir.findAll();
+        
+        for (Impact impact : il) {
+            if(this.nom.equals(impact.getNom()) && this.type.equals(impact.getType()) ){
+                return true;
+            }
+        }
+        return false;
+    }
 }

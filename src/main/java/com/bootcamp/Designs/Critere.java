@@ -7,24 +7,22 @@ package com.bootcamp.Designs;
 import java.util.List;
 
 public class Critere {
-    //private String[] filtre;
     private Pagination pagination;
     private Sort sort;
-/*
-    public String[] getFiltre() {
-        return filtre;
+    
+    private boolean isDefine;
+
+    public Critere() {
+        this.isDefine = false;
     }
 
-    public void setFiltre(String[] filtre) {
-        this.filtre = filtre;
-    }
-*/
     public Pagination getPagination() {
         return pagination;
     }
 
     public void setPagination(Pagination pagination) {
         this.pagination = pagination;
+        this.isDefine = true;
     }
 
     public Sort getSort() {
@@ -33,7 +31,15 @@ public class Critere {
 
     public void setSort(Sort sort) {
         this.sort = sort;
+        this.isDefine = true;
     }
-    
-    
+
+    public boolean isDefine() {
+        return isDefine;
+    }
+
+    public void setIsDefine(boolean isDefine) {
+        this.isDefine = isDefine;
+    }
+     
 }

@@ -1,6 +1,7 @@
 package com.bootcamp.jpa.entities;
 
 import com.bootcamp.jpa.enums.EtatsProjet;
+import com.bootcamp.jpa.repositories.ProjetRepository;
 import java.io.Serializable;
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -190,5 +191,25 @@ public class Projet implements Serializable{
         return "Projet{" + "id=" + id + ", idProgramme=" + idProgramme + ", idIndicateur=" + idIndicateur + ", nom=" + nom + ", reference=" + reference + ", description=" + description + ", phaseActuelle=" + phaseActuelle + ", dateDeDebutReelle=" + dateDeDebutReelle + ", dateDeFinReelle=" + dateDeFinReelle + ", dateDeDebutPrevisionnelle=" + dateDeDebutPrevisionnelle + ", dateDeFinPrevisionnelle=" + dateDeFinPrevisionnelle + ", budgetPrevisionnel=" + budgetPrevisionnel + ", coutReel=" + coutReel + ", etat=" + etat + ", impacts=" + impacts + '}';
     }
  
+    // methode qui verifie si l'instance actuelle existe deja dans la base de donnee
+    ProjetRepository pr = new ProjetRepository("tpRest-mysql");
+    public boolean isExiste(){
+        List<Projet> pl = pr.findAll();
+        
+        for (Projet projet : pl) {
+            if(this.budgetPrevisionnel == projet.getBudgetPrevisionnel() && this.coutReel == projet.getCoutReel() &&
+               this.dateDeDebutPrevisionnelle.equals(projet.getDateDeDebutPrevisionnelle()) &&
+                this.dateDeDebutReelle.equals(projet.getDateDeDebutReelle()) && 
+                 this.dateDeFinPrevisionnelle.equals(projet.getDateDeFinPrevisionnelle()) &&
+                  this.dateDeFinReelle.equals(projet.getDateDeFinReelle()) &&
+                   this.description.equalsIgnoreCase(projet.getDescription()) &&
+                    this.etat.equals(projet.getEtat()) && 
+                     this.nom.equalsIgnoreCase(projet.getNom()) &&
+                      this.phaseActuelle.equalsIgnoreCase(projet.getPhaseActuelle())                    
+                    )
+                return true;
+        }
+        return false;
+    }
  
 }
