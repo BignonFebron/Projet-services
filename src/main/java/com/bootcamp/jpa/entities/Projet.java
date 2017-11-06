@@ -192,21 +192,12 @@ public class Projet implements Serializable{
     }
  
     // methode qui verifie si l'instance actuelle existe deja dans la base de donnee
-    ProjetRepository pr = new ProjetRepository("tpRest-mysql");
-    public boolean isExiste(){
+    public boolean isExist(){
+        ProjetRepository pr = new ProjetRepository("tpRest-mysql");
         List<Projet> pl = pr.findAll();
         
         for (Projet projet : pl) {
-            if(this.budgetPrevisionnel == projet.getBudgetPrevisionnel() && this.coutReel == projet.getCoutReel() &&
-               this.dateDeDebutPrevisionnelle.equals(projet.getDateDeDebutPrevisionnelle()) &&
-                this.dateDeDebutReelle.equals(projet.getDateDeDebutReelle()) && 
-                 this.dateDeFinPrevisionnelle.equals(projet.getDateDeFinPrevisionnelle()) &&
-                  this.dateDeFinReelle.equals(projet.getDateDeFinReelle()) &&
-                   this.description.equalsIgnoreCase(projet.getDescription()) &&
-                    this.etat.equals(projet.getEtat()) && 
-                     this.nom.equalsIgnoreCase(projet.getNom()) &&
-                      this.phaseActuelle.equalsIgnoreCase(projet.getPhaseActuelle())                    
-                    )
+          if( this.description.equalsIgnoreCase(projet.getDescription()) && this.nom.equalsIgnoreCase(projet.getNom()) )
                 return true;
         }
         return false;

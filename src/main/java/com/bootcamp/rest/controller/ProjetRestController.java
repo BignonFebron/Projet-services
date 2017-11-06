@@ -94,8 +94,8 @@ public class ProjetRestController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Projet projet) throws SQLException {      
     //verifie si l'objet projet existe avant d'enregistrer
-    if(projet.isExiste()){
-        resp=ReturnMsgResponse.message("l'obet que vous tentez de creer existe deja");
+    if(projet.isExist()){
+        resp=ReturnMsgResponse.message("l'objet projet que vous tentez de creer existe deja");
     }else{
         List<Impact> iliste = projet.getImpacts();
         // verifie si la liste est vide ( si impact a ete renseigne lors de l'insertion des valeurs)
@@ -109,8 +109,8 @@ public class ProjetRestController {
         }else{
             for (Impact impact : iliste) {
             //verifie si l'objet projet existe avant d'enregistrer
-            if(impact.isExiste()){
-            resp = ReturnMsgResponse.message("\n L'impact Nom: "+impact.getNom()+" type: "+impact.getType()+" n'esiste pas");
+            if(impact.isExist()){
+            resp = ReturnMsgResponse.message("\n L'impact Nom: "+impact.getNom()+" type: "+impact.getType()+" existe deja");
             }else{
             impact.setProjet(projet);
              try {                                

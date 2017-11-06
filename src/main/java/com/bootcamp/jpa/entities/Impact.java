@@ -6,6 +6,7 @@ package com.bootcamp.jpa.entities;
 
 import com.bootcamp.jpa.enums.TypesImpact;
 import com.bootcamp.jpa.repositories.ImpactRepository;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -21,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "rest_impact")
-public class Impact {
+public class Impact implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -73,9 +74,9 @@ public class Impact {
     }
     
     // methode qui verifie si l'instance actuelle existe deja dans la base de donnee 
-    ImpactRepository ir = new ImpactRepository("tpRest-mysql");
     
-    public boolean isExiste(){
+    public boolean isExist(){
+        ImpactRepository ir = new ImpactRepository("tpRest-mysql");
         List<Impact> il = ir.findAll();
         
         for (Impact impact : il) {
