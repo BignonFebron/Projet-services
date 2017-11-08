@@ -1,19 +1,23 @@
 
 package com.bootcamp.rest.controller;
 
-import static aQute.lib.osgi.Processor.split;
 import com.bootcamp.Designs.Critere;
 import com.bootcamp.jpa.entities.Impact;
 import com.bootcamp.jpa.entities.Projet;
+import com.bootcamp.jpa.entities.User;
 import com.bootcamp.jpa.repositories.ProjetRepository;
+import com.bootcamp.rest.exception.AuthentificationException;
 import com.bootcamp.rest.exception.NotCreateException;
 import com.bootcamp.rest.exception.ReturnMsgResponse;
 import com.bootcamp.rest.exception.SuccessMessage;
 import com.bootcamp.rest.exception.ReturnResponse;
+import com.bootcamp.rest.exception.TokenNotGenerateException;
 import com.bootcamp.rest.exception.UnknownException;
+import com.bootcamp.rest.security.JavaJsonWebToken;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static javafx.scene.input.KeyCode.T;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,8 +41,21 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static org.apache.felix.bundlerepository.impl.RepositoryParser.T;
-import scala.tools.nsc.interactive.Global;
+import org.apache.directory.api.ldap.model.cursor.CursorException;
+import org.apache.directory.api.ldap.model.cursor.SearchCursor;
+import org.apache.directory.api.ldap.model.entry.Attribute;
+import org.apache.directory.api.ldap.model.entry.DefaultAttribute;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.entry.Entry;
+import org.apache.directory.api.ldap.model.exception.LdapException;
+import org.apache.directory.api.ldap.model.exception.LdapInvalidAttributeValueException;
+import org.apache.directory.api.ldap.model.message.SearchRequest;
+import org.apache.directory.api.ldap.model.message.SearchRequestImpl;
+import org.apache.directory.api.ldap.model.message.SearchResultEntry;
+import org.apache.directory.api.ldap.model.message.SearchScope;
+import org.apache.directory.api.ldap.model.name.Dn;
+import org.apache.directory.ldap.client.api.LdapConnection;
+import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 
 @Path("/projet")
 public class ProjetRestController {
@@ -51,7 +67,95 @@ public class ProjetRestController {
     Response resp;
     
     Field[] fieldsProjet = returnProperties(Projet.class);
+    
+    JavaJsonWebToken jt = new JavaJsonWebToken();
+    
+    private Entry entry = new DefaultEntry();
+    
+    // service qui recoi les infos de l'authentifiation et les retourne. 
+    
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/login")
+    public Response login(User user){
+        String sn = user.getLogin();
+        //authentifiaction
+        try {
+            searchEntry(sn);
+            resp=SuccessMessage.message("Authentification réussie !");
+        } catch (Exception e) {
+            resp = AuthentificationException.auth("Echec de l'authentification", e);
+        }
+        return resp;
+    }
+    
+    public Entry authentification(String sn) throws LdapException, CursorException, IOException{
+        LdapConnection connection = new LdapNetworkConnection( "localhost", 10389 );
+        connection.bind( "uid=admin,ou=system", "secret" );
+        
+        Entry resultEntry = new DefaultEntry();
+        
+        Attribute a = new DefaultAttribute("userPassword");
+        
+        // Create the SearchRequest object
+        SearchRequest req = new SearchRequestImpl();
+        req.setScope( SearchScope.SUBTREE );
+        req.addAttributes( "*" );
+        req.setTimeLimit( 0 );
+        req.setBase( new Dn( "ou=system" ) );
+        req.setFilter( "(sn="+sn+")" );
+    
+    // Process the request
+    SearchCursor searchCursor = connection.search( req );
+    
+     while ( searchCursor.next() )
+    {
+        org.apache.directory.api.ldap.model.message.Response response = searchCursor.get();
 
+        // process the SearchResultEntry
+        if ( response instanceof SearchResultEntry )
+        {
+            resultEntry =  ( ( SearchResultEntry ) response ).getEntry();
+            generateToken(resultEntry);
+            return resultEntry;
+        }
+    }
+     connection.unBind();
+     connection.close();
+        
+        return resultEntry;
+    }
+    
+    public Response generateToken(Entry entry){
+        
+        String iat = "BootcampToken";
+        long tm = 900000; // 15 min
+             
+            try {          
+                String subject = entry.toString();
+                String token = jt.createJWT(iat, subject, tm);
+                entry.put("ou", token);
+                resp = SuccessMessage.message("TOKEN BIEN GENERE");
+        } catch (Exception e) {
+                resp = TokenNotGenerateException.generateTokenException();
+         }
+       return resp;  
+    }
+    
+    public Entry getEntry(){
+        return this.entry;
+    }
+    
+    public void searchEntry(String s) throws LdapException, CursorException, IOException{
+        this.entry = authentification(s);
+    }
+    
+    public String getToken() throws LdapInvalidAttributeValueException{
+        return getEntry().get("ou").getString();
+    }
+    
+    
+    
     // Services qui renvoie la liste des projets suivants les criteres de trie,
     //de filtre ou de pagination envoyé par l'user suivant un format donnee
     @POST
@@ -196,16 +300,9 @@ public class ProjetRestController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/list")
-    public Response getListProjets() {       
-            try {
-                liste = pr.findAll();     
-                return Response.status(200).entity(liste).build();
-               // resp =ReturnResponse.object("Liste de tous les projets", liste);
-            } catch (Exception e) {
-                resp=UnknownException.unknownException(e);
-            }
+    public Response getListProjets() throws LdapInvalidAttributeValueException {       
             
-        return resp;
+        return Response.status(200).entity(getToken()).build();
     }
      /*  Q U E L Q U E S   M E T H O D E S    U T I L E S   */
     

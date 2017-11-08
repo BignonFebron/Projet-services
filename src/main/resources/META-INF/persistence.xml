@@ -6,7 +6,7 @@
     <properties>
       <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/db_bootcamp2"/>
-      <property name="javax.persistence.jdbc.user" value="fbr"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
       <property name="javax.persistence.jdbc.password" value="amuztadji"/>
       <property name="javax.persistence.schema-generation.create-database-schemas" value="true"/>
       <!-- EclipseLink should create the database schema automatically -->

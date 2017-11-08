@@ -18,7 +18,7 @@ public class JavaJsonWebToken {
     Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
     
 //Methode pour creer un JWT
-public void createJWT(String issuer, String subject, long ttlMillis) {
+public String createJWT(String issuer, String subject, long ttlMillis) {
     
 
     long nowMillis = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public void createJWT(String issuer, String subject, long ttlMillis) {
         builder.setExpiration(exp);
     }
         
-    this.setToken(builder.compact());
+    return builder.compact();
 }
 
  //Methode Pour verifier un JWT 
